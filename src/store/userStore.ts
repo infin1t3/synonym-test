@@ -12,6 +12,12 @@ interface UserStore {
   isError: boolean;
   errorMessage: string;
   isOffline: boolean;
+  isManualOffline: boolean;
+  
+  // Search and sort states
+  searchTerm: string;
+  sortBy: 'name' | 'email' | 'age' | 'country';
+  sortOrder: 'asc' | 'desc';
   
   // Pagination state
   currentPage: number;
@@ -24,7 +30,14 @@ interface UserStore {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setOffline: (offline: boolean) => void;
+  setManualOffline: (offline: boolean) => void;
   setPagination: (page: number, total?: number) => void;
+  
+  // Search and sort actions
+  setSearchTerm: (term: string) => void;
+  setSortBy: (field: 'name' | 'email' | 'age' | 'country') => void;
+  setSortOrder: (order: 'asc' | 'desc') => void;
+  getFilteredAndSortedUsers: () => User[];
   
   // Favorites actions
   toggleFavorite: (userId: string) => Promise<void>;
@@ -46,9 +59,13 @@ export const useUserStore = create<UserStore>()(
       isError: false,
       errorMessage: '',
       isOffline: false,
+      isManualOffline: false,
       currentPage: 1,
       totalResults: 0,
       resultsPerPage: 10,
+      searchTerm: '',
+      sortBy: 'name',
+      sortOrder: 'asc',
 
       // Basic setters
       setUsers: (users) => set({ users }),
@@ -61,10 +78,69 @@ export const useUserStore = create<UserStore>()(
         errorMessage: error || '' 
       }),
       setOffline: (isOffline) => set({ isOffline }),
+      setManualOffline: (isManualOffline) => set({ isManualOffline }),
       setPagination: (page, total) => set((state) => ({ 
         currentPage: page,
         totalResults: total !== undefined ? total : state.totalResults
       })),
+      
+      // Search and sort actions
+      setSearchTerm: (searchTerm) => set({ searchTerm }),
+      setSortBy: (sortBy) => set({ sortBy }),
+      setSortOrder: (sortOrder) => set({ sortOrder }),
+      
+      getFilteredAndSortedUsers: () => {
+        const { users, searchTerm, sortBy, sortOrder } = get();
+        
+        // Filter users based on search term
+        const filtered = users.filter(user => {
+          const fullName = `${user.name.first} ${user.name.last}`.toLowerCase();
+          const email = user.email.toLowerCase();
+          const term = searchTerm.toLowerCase();
+          return fullName.includes(term) || email.includes(term);
+        });
+        
+        // Sort users
+        filtered.sort((a, b) => {
+          let valueA: string | number;
+          let valueB: string | number;
+          
+          switch (sortBy) {
+            case 'name':
+              valueA = `${a.name.first} ${a.name.last}`;
+              valueB = `${b.name.first} ${b.name.last}`;
+              break;
+            case 'email':
+              valueA = a.email;
+              valueB = b.email;
+              break;
+            case 'age':
+              valueA = a.dob.age;
+              valueB = b.dob.age;
+              break;
+            case 'country':
+              valueA = a.location.country;
+              valueB = b.location.country;
+              break;
+            default:
+              valueA = `${a.name.first} ${a.name.last}`;
+              valueB = `${b.name.first} ${b.name.last}`;
+          }
+          
+          if (typeof valueA === 'string' && typeof valueB === 'string') {
+            valueA = valueA.toLowerCase();
+            valueB = valueB.toLowerCase();
+          }
+          
+          if (sortOrder === 'asc') {
+            return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+          } else {
+            return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+          }
+        });
+        
+        return filtered;
+      },
 
       // Favorites management
       toggleFavorite: async (userId) => {
@@ -100,8 +176,20 @@ export const useUserStore = create<UserStore>()(
 
       // Data fetching
       fetchUsers: async (page = 1) => {
-        const { resultsPerPage } = get();
+        const { resultsPerPage, isManualOffline } = get();
         set({ isLoading: true, isError: false, errorMessage: '' });
+
+        // Check manual offline mode
+        if (isManualOffline) {
+          set({ 
+            isError: true, 
+            errorMessage: 'Manual offline mode enabled',
+            isOffline: true
+          });
+          await get().loadFromCache();
+          set({ isLoading: false });
+          return;
+        }
 
         try {
           const response = await fetch(

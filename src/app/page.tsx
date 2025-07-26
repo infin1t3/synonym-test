@@ -7,6 +7,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { StatusDisplay, OfflineBanner } from '@/components/StatusDisplay';
 import { Pagination } from '@/components/Pagination';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
+import { SearchAndFilters } from '@/components/SearchAndFilters';
 
 export default function Home() {
   const {
@@ -22,7 +23,10 @@ export default function Home() {
     loadFavorites,
     loadFromCache,
     clearCache,
+    getFilteredAndSortedUsers,
   } = useUserStore();
+
+  const filteredUsers = getFilteredAndSortedUsers();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -109,31 +113,36 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              User Directory
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              A local-first application showcasing user data with offline support, 
-              favorites, and client-side pagination.
-            </p>
-          </div>
-          <div className="ml-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                User Directory
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Local-first app with offline support
+              </p>
+            </div>
             <DarkModeToggle />
           </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Offline Banner */}
         <OfflineBanner isVisible={isOffline} />
+
+        {/* Search and Filters */}
+        <SearchAndFilters />
 
         {/* Controls */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            {isOffline ? 'Showing cached data' : `${users.length} users loaded`}
+            {isOffline ? 'Showing cached data' : `${filteredUsers.length} of ${users.length} users`}
           </div>
           
           <button
@@ -146,7 +155,7 @@ export default function Home() {
 
         {/* User Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <UserCard key={user.id} user={user} />
           ))}
         </div>
@@ -155,6 +164,16 @@ export default function Home() {
         {isLoading && users.length > 0 && (
           <div className="mb-8">
             <LoadingState count={3} />
+          </div>
+        )}
+
+        {/* No results message */}
+        {filteredUsers.length === 0 && users.length > 0 && !isLoading && (
+          <div className="text-center py-12">
+            <div className="text-gray-500 dark:text-gray-400">
+              <p className="text-lg mb-2">No users found</p>
+              <p className="text-sm">Try adjusting your search criteria</p>
+            </div>
           </div>
         )}
 
