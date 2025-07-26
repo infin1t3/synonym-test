@@ -8,6 +8,7 @@ import { StatusDisplay, OfflineBanner } from '@/components/StatusDisplay';
 import { Pagination } from '@/components/Pagination';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { SearchAndFilters } from '@/components/SearchAndFilters';
+import { OfflineToggle } from '@/components/OfflineToggle';
 
 export default function Home() {
   const {
@@ -58,59 +59,7 @@ export default function Home() {
     await fetchUsers(1);
   };
 
-  // Show loading state only on initial load
-  if (isLoading && users.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Loading Users...
-            </h1>
-          </div>
-          <LoadingState />
-        </div>
-      </div>
-    );
-  }
 
-  // Show error state if there's an error and no cached data
-  if (isError && users.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <StatusDisplay
-            type="error"
-            title="Failed to Load Users"
-            message={errorMessage || 'Something went wrong while fetching user data.'}
-            action={{
-              label: 'Try Again',
-              onClick: handleRetry,
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Show empty state if no users and not loading
-  if (!isLoading && users.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <StatusDisplay
-            type="empty"
-            title="No Users Found"
-            message="There are no users to display at the moment."
-            action={{
-              label: 'Refresh',
-              onClick: () => fetchUsers(1),
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -126,7 +75,10 @@ export default function Home() {
                 Local-first app with offline support
               </p>
             </div>
-            <DarkModeToggle />
+            <div className="flex items-center gap-3">
+              <OfflineToggle />
+              <DarkModeToggle />
+            </div>
           </div>
         </div>
       </div>
@@ -136,8 +88,38 @@ export default function Home() {
         {/* Offline Banner */}
         <OfflineBanner isVisible={isOffline} />
 
-        {/* Search and Filters */}
-        <SearchAndFilters />
+        {/* Conditional Content */}
+        {isLoading && users.length === 0 ? (
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Loading Users...
+            </h1>
+            <LoadingState />
+          </div>
+        ) : isError && users.length === 0 ? (
+          <StatusDisplay
+            type="error"
+            title="Failed to Load Users"
+            message={errorMessage || 'Something went wrong while fetching user data.'}
+            action={{
+              label: 'Try Again',
+              onClick: handleRetry,
+            }}
+          />
+        ) : !isLoading && users.length === 0 ? (
+          <StatusDisplay
+            type="empty"
+            title="No Users Found"
+            message="There are no users to display at the moment."
+            action={{
+              label: 'Refresh',
+              onClick: () => fetchUsers(1),
+            }}
+          />
+        ) : (
+          <>
+            {/* Search and Filters */}
+            <SearchAndFilters />
 
         {/* Controls */}
         <div className="flex justify-between items-center mb-6">
@@ -177,14 +159,16 @@ export default function Home() {
           </div>
         )}
 
-        {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalResults={totalResults}
-          resultsPerPage={resultsPerPage}
-          isLoading={isLoading}
-          onPageChange={handlePageChange}
-        />
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalResults={totalResults}
+              resultsPerPage={resultsPerPage}
+              isLoading={isLoading}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
       </div>
     </div>
   );
