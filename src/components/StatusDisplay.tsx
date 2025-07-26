@@ -1,8 +1,9 @@
 import React from 'react';
 import { ExclamationTriangleIcon, GlobeIcon } from '@radix-ui/react-icons';
+import { STATUS_DISPLAY_TYPES, StatusDisplayType } from '@/lib/constants';
 
 interface StatusDisplayProps {
-  type: 'error' | 'offline' | 'empty';
+  type: StatusDisplayType;
   title: string;
   message: string;
   action?: {
@@ -19,9 +20,9 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({
 }) => {
   const getIcon = () => {
     switch (type) {
-      case 'error':
+      case STATUS_DISPLAY_TYPES.ERROR:
         return <ExclamationTriangleIcon className="h-12 w-12 text-red-500" />;
-      case 'offline':
+      case STATUS_DISPLAY_TYPES.OFFLINE:
         return <GlobeIcon className="h-12 w-12 text-orange-500" />;
       default:
         return <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700" />;
@@ -30,13 +31,13 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({
 
   const getColors = () => {
     switch (type) {
-      case 'error':
+      case STATUS_DISPLAY_TYPES.ERROR:
         return {
           bg: 'bg-red-50 dark:bg-red-900/20',
           border: 'border-red-200 dark:border-red-800',
           button: 'bg-red-600 hover:bg-red-700',
         };
-      case 'offline':
+      case STATUS_DISPLAY_TYPES.OFFLINE:
         return {
           bg: 'bg-orange-50 dark:bg-orange-900/20',
           border: 'border-orange-200 dark:border-orange-800',

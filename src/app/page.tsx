@@ -9,6 +9,7 @@ import { Pagination } from '@/components/Pagination';
 import { DarkModeToggle } from '@/components/DarkModeToggle';
 import { SearchAndFilters } from '@/components/SearchAndFilters';
 import { OfflineToggle } from '@/components/OfflineToggle';
+import { STATUS_DISPLAY_TYPES } from '@/lib/constants';
 
 export default function Home() {
   const {
@@ -98,7 +99,7 @@ export default function Home() {
           </div>
         ) : isError && users.length === 0 ? (
           <StatusDisplay
-            type="error"
+            type={STATUS_DISPLAY_TYPES.ERROR}
             title="Failed to Load Users"
             message={errorMessage || 'Something went wrong while fetching user data.'}
             action={{
@@ -108,7 +109,7 @@ export default function Home() {
           />
         ) : !isLoading && users.length === 0 ? (
           <StatusDisplay
-            type="empty"
+            type={STATUS_DISPLAY_TYPES.EMPTY}
             title="No Users Found"
             message="There are no users to display at the moment."
             action={{
