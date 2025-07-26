@@ -113,7 +113,7 @@ export const useUserStore = create<UserStore>()(
           }
           
           const data = await response.json();
-          const users: User[] = data.results.map((user: any) => ({
+          const users: User[] = data.results.map((user: Omit<User, 'id'>) => ({
             ...user,
             id: user.login.uuid
           }));

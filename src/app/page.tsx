@@ -6,6 +6,7 @@ import { UserCard } from '@/components/UserCard';
 import { LoadingState } from '@/components/LoadingState';
 import { StatusDisplay, OfflineBanner } from '@/components/StatusDisplay';
 import { Pagination } from '@/components/Pagination';
+import { DarkModeToggle } from '@/components/DarkModeToggle';
 
 export default function Home() {
   const {
@@ -31,7 +32,7 @@ export default function Home() {
       // Try to fetch fresh data, fallback to cache if offline
       try {
         await fetchUsers(1);
-      } catch (error) {
+      } catch {
         // If initial fetch fails, try loading from cache
         await loadFromCache();
       }
@@ -111,14 +112,19 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            User Directory
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            A local-first application showcasing user data with offline support, 
-            favorites, and client-side pagination.
-          </p>
+        <div className="flex justify-between items-start mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              User Directory
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              A local-first application showcasing user data with offline support, 
+              favorites, and client-side pagination.
+            </p>
+          </div>
+          <div className="ml-4">
+            <DarkModeToggle />
+          </div>
         </div>
 
         {/* Offline Banner */}
@@ -132,7 +138,7 @@ export default function Home() {
           
           <button
             onClick={handleClearCache}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200 cursor-pointer"
           >
             Clear Cache
           </button>

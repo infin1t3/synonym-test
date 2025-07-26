@@ -44,7 +44,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         
         <button
           onClick={handleFavoriteClick}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           {isFavorite ? (
